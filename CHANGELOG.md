@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.1.0] - 2026-02-28
+
 ### Added
 
 - Dual-channel analytics support for simultaneous frontend and backend event capture.
@@ -23,3 +37,4 @@ All notable changes to this project are documented in this file.
 - Local-space analytics client with queueing, browser lifecycle flush hooks, `sendBeacon` support, and configurable transport.
 - React integration with `AnalyticsProvider`, `useAnalytics`, and `useComponentInteractionTracker`.
 - Unit tests for transport/queue behavior and React provider/hook integration.
+[1.1.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.0
