@@ -14,6 +14,7 @@ Local-space analytics primitives for browser apps and reusable React components.
 
 - Queue interaction events locally (in-memory + `localStorage` backup)
 - Flush analytics batches to a configurable endpoint
+- Support frontend and backend analytics channels simultaneously
 - Browser-lifecycle flush support (`visibilitychange`, `pagehide`, `sendBeacon`)
 - React provider and hooks for component-level event instrumentation
 
@@ -26,9 +27,12 @@ npm install @plasius/analytics
 ## Core API
 
 ```ts
-import { createLocalSpaceAnalyticsClient } from "@plasius/analytics";
+import {
+  createBackendAnalyticsClient,
+  createFrontendAnalyticsClient,
+} from "@plasius/analytics";
 
-const analytics = createLocalSpaceAnalyticsClient({
+const frontendAnalytics = createFrontendAnalyticsClient({
   source: "sharedcomponents",
   endpoint: "https://analytics.example.com/collect",
   defaultContext: {
@@ -36,7 +40,12 @@ const analytics = createLocalSpaceAnalyticsClient({
   },
 });
 
-analytics.track({
+const backendAnalytics = createBackendAnalyticsClient({
+  source: "plasius-ltd-site-api",
+  endpoint: "https://analytics.example.com/collect",
+});
+
+frontendAnalytics.track({
   component: "Header",
   action: "nav_click",
   label: "About",
@@ -46,7 +55,15 @@ analytics.track({
   },
 });
 
-await analytics.flush();
+backendAnalytics.track({
+  component: "VideoWorker",
+  action: "job_completed",
+  requestId: "req-123",
+  context: { worker: "render" },
+});
+
+await frontendAnalytics.flush();
+await backendAnalytics.flush();
 ```
 
 ## React API
@@ -75,6 +92,7 @@ function SaveButton() {
 <AnalyticsProvider
   source="sharedcomponents"
   endpoint="https://analytics.example.com/collect"
+  channel="frontend"
 >
   <SaveButton />
 </AnalyticsProvider>;
@@ -87,19 +105,26 @@ function SaveButton() {
 ```json
 {
   "source": "sharedcomponents",
+  "channel": "frontend",
+  "runtime": "browser",
   "sentAt": 1735300000000,
   "events": [
     {
       "id": "event_xxx",
       "source": "sharedcomponents",
+      "channel": "frontend",
+      "runtime": "browser",
       "sessionId": "session_xxx",
       "timestamp": 1735300000000,
       "component": "Header",
       "action": "nav_click",
+      "requestId": "req-123",
       "label": "About",
       "href": "/about",
       "variant": "desktop",
       "context": {
+        "analyticsChannel": "frontend",
+        "analyticsRuntime": "browser",
         "application": "white-label-portal",
         "feature": "navigation"
       }

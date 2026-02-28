@@ -13,6 +13,10 @@ export interface AnalyticsProviderProps {
   children: ReactNode;
   source?: string;
   endpoint?: string;
+  channel?: LocalSpaceAnalyticsConfig["channel"];
+  runtime?: LocalSpaceAnalyticsConfig["runtime"];
+  sessionId?: string;
+  injectChannelContext?: boolean;
   enabled?: boolean;
   defaultContext?: LocalSpaceAnalyticsConfig["defaultContext"];
   headers?: LocalSpaceAnalyticsConfig["headers"];
@@ -37,6 +41,10 @@ export function AnalyticsProvider({
   children,
   source = "react-app",
   endpoint,
+  channel,
+  runtime,
+  sessionId,
+  injectChannelContext,
   enabled = true,
   defaultContext,
   headers,
@@ -60,6 +68,10 @@ export function AnalyticsProvider({
     return createLocalSpaceAnalyticsClient({
       source,
       endpoint,
+      channel,
+      runtime,
+      sessionId,
+      injectChannelContext,
       enabled,
       defaultContext,
       headers,
@@ -74,6 +86,10 @@ export function AnalyticsProvider({
     client,
     source,
     endpoint,
+    channel,
+    runtime,
+    sessionId,
+    injectChannelContext,
     enabled,
     defaultContext,
     headers,

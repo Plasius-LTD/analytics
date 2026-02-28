@@ -18,9 +18,11 @@ export function useComponentInteractionTracker(
       trackInteraction({
         component,
         action,
+        channel: details?.channel,
         label: details?.label,
         href: details?.href,
         variant: details?.variant,
+        requestId: details?.requestId,
         timestamp: details?.timestamp,
         context: {
           ...baseContext,
