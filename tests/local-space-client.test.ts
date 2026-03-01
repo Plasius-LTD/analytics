@@ -162,6 +162,216 @@ describe("createLocalSpaceAnalyticsClient", () => {
     expect(payload.events?.[1]?.context?.analyticsChannel).toBe("backend");
   });
 
+  it("sanitizes error reports and triggers threshold callbacks", async () => {
+    const requests: AnalyticsTransportRequest[] = [];
+    const thresholdEvents: Array<{ report?: { count?: number; fingerprint?: string } }> = [];
+
+    const client = createClient({
+      source: "sharedcomponents",
+      endpoint: "https://example.com/analytics",
+      batchSize: 10,
+      flushIntervalMs: 60000,
+      storageKey: "analytics-client-test-error-reporting",
+      transport: async (request) => {
+        requests.push(request);
+      },
+      errorReporting: {
+        thresholdCount: 2,
+        thresholdWindowMs: 60_000,
+        onThresholdReached: (event) => {
+          thresholdEvents.push(event);
+        },
+      },
+    });
+
+    client.reportError({
+      boundary: "CheckoutBoundary",
+      error: new Error("Checkout failed for john@example.com token=abc123456"),
+      componentStack: "\n at CheckoutPage (https://example.com/checkout?email=john@example.com)",
+      context: {
+        feature: "checkout",
+        email: "john@example.com",
+        authToken: "abc123456",
+        ipAddress: "198.51.100.10",
+      },
+      tags: ["checkout", "critical"],
+    });
+
+    client.reportError({
+      boundary: "CheckoutBoundary",
+      error: new Error("Checkout failed for john@example.com token=abc123456"),
+      context: {
+        userEmail: "john@example.com",
+      },
+    });
+
+    await client.flush();
+
+    expect(requests).toHaveLength(1);
+
+    const payload = JSON.parse(requests[0]?.body ?? "{}") as {
+      events?: Array<{
+        kind?: string;
+        error?: { message?: string; boundary?: string; fingerprint?: string };
+        context?: Record<string, unknown>;
+      }>;
+    };
+
+    expect(payload.events).toHaveLength(2);
+    expect(payload.events?.[0]?.kind).toBe("error");
+    expect(payload.events?.[0]?.error?.boundary).toBe("CheckoutBoundary");
+    expect(payload.events?.[0]?.error?.message).toContain("[REDACTED]");
+    expect(payload.events?.[0]?.error?.message).not.toContain("john@example.com");
+    expect(payload.events?.[0]?.context?.email).toBe("[REDACTED]");
+    expect(payload.events?.[0]?.context?.authToken).toBe("[REDACTED]");
+
+    const clientIdentity = payload.events?.[0]?.context?.clientIdentity as
+      | {
+          sessionIdHash?: string;
+          userAgentHash?: string;
+          identifiers?: Array<{ key?: string; valueHash?: string }>;
+        }
+      | undefined;
+    expect(clientIdentity?.sessionIdHash).toMatch(/^hash_/);
+    expect(clientIdentity?.userAgentHash).toMatch(/^hash_/);
+    const emailIdentifier = clientIdentity?.identifiers?.find((entry) => entry.key === "email");
+    const authIdentifier = clientIdentity?.identifiers?.find(
+      (entry) => entry.key === "authToken"
+    );
+    const ipIdentifier = clientIdentity?.identifiers?.find(
+      (entry) => entry.key === "ipAddress"
+    );
+    expect(emailIdentifier?.valueHash).toMatch(/^hash_/);
+    expect(authIdentifier?.valueHash).toMatch(/^hash_/);
+    expect(ipIdentifier?.valueHash).toMatch(/^hash_/);
+
+    expect(thresholdEvents).toHaveLength(1);
+    expect(thresholdEvents[0]?.report?.count).toBe(2);
+    expect(client.getIssueReports()[0]?.count).toBe(2);
+    expect(client.getIssueReports()[0]?.fingerprint).toBe(
+      payload.events?.[0]?.error?.fingerprint
+    );
+  });
+
+  it("handles circular error context structures safely", async () => {
+    const requests: AnalyticsTransportRequest[] = [];
+    const client = createClient({
+      source: "sharedcomponents",
+      endpoint: "https://example.com/analytics",
+      batchSize: 10,
+      flushIntervalMs: 60000,
+      storageKey: "analytics-client-test-error-reporting-circular-context",
+      transport: async (request) => {
+        requests.push(request);
+      },
+    });
+
+    const circularContext: Record<string, unknown> = {
+      email: "john@example.com",
+      step: "checkout",
+    };
+    circularContext.self = circularContext;
+
+    client.reportError({
+      boundary: "CheckoutBoundary",
+      error: new Error("Circular context test"),
+      context: {
+        diagnostics: circularContext,
+      },
+    });
+
+    await client.flush();
+
+    const payload = JSON.parse(requests[0]?.body ?? "{}") as {
+      events?: Array<{
+        context?: Record<string, unknown>;
+      }>;
+    };
+
+    const diagnostics = payload.events?.[0]?.context?.diagnostics as
+      | Record<string, unknown>
+      | undefined;
+    expect(diagnostics?.email).toBe("[REDACTED]");
+    expect(diagnostics?.self).toBe("[circular]");
+
+    const clientIdentity = payload.events?.[0]?.context?.clientIdentity as
+      | { identifiers?: Array<{ key?: string; valueHash?: string }> }
+      | undefined;
+    const nestedEmailIdentifier = clientIdentity?.identifiers?.find(
+      (entry) => entry.key === "diagnostics.email"
+    );
+    expect(nestedEmailIdentifier?.valueHash).toMatch(/^hash_/);
+  });
+
+  it("rejects insecure endpoints for error reporting by default", async () => {
+    const requests: AnalyticsTransportRequest[] = [];
+    const onErrorCalls: unknown[] = [];
+
+    const client = createClient({
+      source: "sharedcomponents",
+      endpoint: "http://example.com/analytics",
+      batchSize: 10,
+      flushIntervalMs: 60000,
+      storageKey: "analytics-client-test-error-reporting-insecure",
+      transport: async (request) => {
+        requests.push(request);
+      },
+      onError: (error) => {
+        onErrorCalls.push(error);
+      },
+    });
+
+    client.reportError({
+      boundary: "InsecureBoundary",
+      error: new Error("Should not send"),
+    });
+
+    await client.flush();
+
+    expect(requests).toHaveLength(0);
+    expect(onErrorCalls).toHaveLength(1);
+    expect(String(onErrorCalls[0])).toContain("requires an https or localhost endpoint");
+    expect(
+      window.localStorage.getItem("analytics-client-test-error-reporting-insecure")
+    ).toBeNull();
+  });
+
+  it("blocks flushing queued error events when endpoint is downgraded to insecure", async () => {
+    const requests: AnalyticsTransportRequest[] = [];
+    const onErrorCalls: unknown[] = [];
+
+    const client = createClient({
+      source: "sharedcomponents",
+      batchSize: 10,
+      flushIntervalMs: 60000,
+      storageKey: "analytics-client-test-error-reporting-insecure-downgrade",
+      transport: async (request) => {
+        requests.push(request);
+      },
+      onError: (error) => {
+        onErrorCalls.push(error);
+      },
+    });
+
+    client.reportError({
+      boundary: "CheckoutBoundary",
+      error: new Error("Offline queued error"),
+    });
+
+    expect(
+      window.localStorage.getItem("analytics-client-test-error-reporting-insecure-downgrade")
+    ).not.toBeNull();
+
+    client.updateConfig({ endpoint: "http://example.com/analytics" });
+    await client.flush();
+
+    expect(requests).toHaveLength(0);
+    expect(onErrorCalls.length).toBeGreaterThanOrEqual(1);
+    expect(
+      window.localStorage.getItem("analytics-client-test-error-reporting-insecure-downgrade")
+    ).not.toBeNull();
+  });
+
   it("uses channel-aware default storage keys so concurrent clients do not collide", () => {
     const frontendClient = createClient({
       source: "sharedcomponents",
@@ -417,9 +627,14 @@ describe("createLocalSpaceAnalyticsClient", () => {
     noopClient.track({ component: "Noop", action: "track" });
     noopClient.trackFrontend({ component: "Noop", action: "frontend" });
     noopClient.trackBackend({ component: "Noop", action: "backend" });
+    noopClient.reportError({
+      boundary: "NoopBoundary",
+      error: new Error("noop"),
+    });
     await noopClient.flush();
     noopClient.updateConfig({ endpoint: "https://example.com" });
     expect(noopClient.getConfig().transport).toBeTypeOf("function");
+    expect(noopClient.getIssueReports()).toEqual([]);
     expect(noopClient.channel).toBe("backend");
   });
 });

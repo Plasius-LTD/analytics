@@ -5,16 +5,20 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - `reportError` and `getIssueReports` on analytics clients for structured crash/error-boundary reporting.
+  - Error issue-threshold callbacks (`errorReporting.onThresholdReached`) to support automated remediation workflows.
 
 - **Changed**
-  - (placeholder)
+  - Extended event payloads with `kind` and optional structured `error` metadata for crash diagnostics.
+  - Error-report sanitization now reuses `@plasius/schema` as the source of truth for private-data handling, including `prepareForStorage` transforms for crash identity fields.
 
 - **Fixed**
-  - (placeholder)
+  - Normalized persisted legacy events to include explicit event kind defaults.
+  - Hardened error-context sanitization to handle circular structures without crashing reporters.
 
 - **Security**
-  - (placeholder)
+  - Added redaction and context sanitization for error-report payloads.
+  - Enforced secure-by-default endpoint checks for crash reporting (`https`/localhost unless explicitly overridden).
 
 ## [1.1.0] - 2026-02-28
 

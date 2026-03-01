@@ -15,6 +15,9 @@ Local-space analytics primitives for browser apps and reusable React components.
 - Queue interaction events locally (in-memory + `localStorage` backup)
 - Flush analytics batches to a configurable endpoint
 - Support frontend and backend analytics channels simultaneously
+- Report crash/error-boundary events with structured payloads
+- Sanitize error reports to reduce accidental PII leakage
+- Trigger threshold callbacks for automated remediation workflows
 - Browser-lifecycle flush support (`visibilitychange`, `pagehide`, `sendBeacon`)
 - React provider and hooks for component-level event instrumentation
 
@@ -66,6 +69,43 @@ await frontendAnalytics.flush();
 await backendAnalytics.flush();
 ```
 
+## Crash Reporting
+
+```ts
+import { createFrontendAnalyticsClient } from "@plasius/analytics";
+
+const analytics = createFrontendAnalyticsClient({
+  source: "sharedcomponents",
+  endpoint: "https://analytics.example.com/collect",
+  errorReporting: {
+    thresholdCount: 5,
+    thresholdWindowMs: 300000,
+    onThresholdReached: ({ report }) => {
+      // Hook into your automation system (ticket/task/alert)
+      console.log("error threshold reached", report.fingerprint, report.count);
+    },
+  },
+});
+
+analytics.reportError({
+  boundary: "CheckoutBoundary",
+  error: new Error("Payment failed"),
+  context: {
+    feature: "checkout",
+    ipAddress: "198.51.100.10",
+    sessionToken: "opaque-session-token",
+  },
+});
+
+const issueReports = analytics.getIssueReports();
+```
+
+Error reporting is secure-by-default. When `secureEndpointOnly` is enabled (default), crash reports are sent only to `https` endpoints (or localhost for development).
+PII/private-data handling for crash payloads is delegated to `@plasius/schema` as the source of truth:
+- crash context is normalized, sensitive keys are identified, and a machine/session identity envelope is built.
+- the identity envelope is passed through schema `prepareForStorage`, which applies field-level hashing/redaction policies before transport.
+- non-sensitive diagnostics remain available as mixed typed fields for debugging.
+
 ## React API
 
 ```tsx
@@ -116,17 +156,26 @@ function SaveButton() {
       "runtime": "browser",
       "sessionId": "session_xxx",
       "timestamp": 1735300000000,
+      "kind": "error",
       "component": "Header",
-      "action": "nav_click",
-      "requestId": "req-123",
-      "label": "About",
-      "href": "/about",
-      "variant": "desktop",
+      "action": "error_boundary_caught",
+      "label": "err_abc123",
+      "error": {
+        "boundary": "CheckoutBoundary",
+        "name": "Error",
+        "message": "Payment failed",
+        "fingerprint": "err_abc123",
+        "handled": true,
+        "severity": "error"
+      },
       "context": {
         "analyticsChannel": "frontend",
         "analyticsRuntime": "browser",
-        "application": "white-label-portal",
-        "feature": "navigation"
+        "feature": "checkout",
+        "errorFingerprint": "err_abc123",
+        "errorBoundary": "CheckoutBoundary",
+        "errorSeverity": "error",
+        "errorHandled": true
       }
     }
   ]
