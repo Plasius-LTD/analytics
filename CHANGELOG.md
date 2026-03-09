@@ -11,6 +11,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.1.6] - 2026-03-09
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
   - Stopped forcing `fetch(..., { keepalive: true })` on normal flushes so browser analytics POSTs do not remain pending behind proxies while unload delivery continues to use `sendBeacon`.
 
 - **Security**
@@ -72,3 +86,4 @@ All notable changes to this project are documented in this file.
 [1.1.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.0
 [1.1.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.4
 [1.1.5]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.5
+[1.1.6]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.6
