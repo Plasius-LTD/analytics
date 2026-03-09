@@ -8,6 +8,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.1.5] - 2026-03-09
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
   - Raised the minimum `@plasius/schema` dependency to `^1.2.6` to consume field exposure metadata and safe serialization support.
 
 - **Fixed**
@@ -57,3 +71,4 @@ All notable changes to this project are documented in this file.
 - Unit tests for transport/queue behavior and React provider/hook integration.
 [1.1.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.0
 [1.1.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.4
+[1.1.5]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.5
