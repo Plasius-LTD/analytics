@@ -8,7 +8,7 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
-  - (placeholder)
+  - Raised the minimum `@plasius/schema` dependency to `^1.2.6` to consume field exposure metadata and safe serialization support.
 
 - **Fixed**
   - (placeholder)
