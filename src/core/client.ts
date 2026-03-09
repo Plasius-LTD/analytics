@@ -1359,7 +1359,8 @@ export function createLocalSpaceAnalyticsClient(
         endpoint: resolvedConfig.endpoint,
         body,
         headers: resolvedConfig.headers,
-        keepalive: true,
+        // Normal flushes do not need fetch keepalive; unload/pagehide uses sendBeacon.
+        keepalive: false,
       });
 
       queue = queue.slice(events.length);

@@ -459,6 +459,7 @@ describe("createLocalSpaceAnalyticsClient", () => {
 
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0]?.input).toBe("https://example.com/analytics");
+    expect(fetchCalls[0]?.init?.keepalive).toBe(false);
 
     globalThis.fetch = originalFetch;
   });

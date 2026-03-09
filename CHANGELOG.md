@@ -11,7 +11,7 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
-  - (placeholder)
+  - Stopped forcing `fetch(..., { keepalive: true })` on normal flushes so browser analytics POSTs do not remain pending behind proxies while unload delivery continues to use `sendBeacon`.
 
 - **Security**
   - (placeholder)
