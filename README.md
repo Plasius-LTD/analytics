@@ -186,6 +186,7 @@ function SaveButton() {
 
 ```bash
 npm install
+npm run typecheck
 npm run build
 npm test
 npm run test:coverage

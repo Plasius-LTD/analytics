@@ -23,6 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit --pretty",
     "prepare": "npm run build",
     "clean": "rimraf dist",
     "test:coverage": "vitest run --coverage",
