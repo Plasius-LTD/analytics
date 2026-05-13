@@ -541,7 +541,7 @@ function redactSensitiveText(value: string): string {
 function sanitizeSingleLine(value: unknown, maxLength: number): string {
   const raw = typeof value === "string" ? value : String(value ?? "");
   const flattened = raw
-    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\p{Cc}/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 

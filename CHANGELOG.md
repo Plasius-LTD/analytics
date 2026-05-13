@@ -8,6 +8,7 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
+  - Refreshed dependencies to the latest stable published versions.
   - (placeholder)
 
 - **Fixed**
