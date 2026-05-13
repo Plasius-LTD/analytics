@@ -8,7 +8,7 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
-  - (placeholder)
+  - Added a canonical `npm run typecheck` gate and wired repository automation to reuse it for explicit TypeScript validation.
 
 - **Fixed**
   - (placeholder)
