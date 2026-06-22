@@ -16,6 +16,20 @@ All notable changes to this project are documented in this file.
 - **Security**
   - (placeholder)
 
+## [1.1.15] - 2026-06-22
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
 ## [1.1.12] - 2026-06-01
 
 - **Added**
@@ -178,3 +192,4 @@ All notable changes to this project are documented in this file.
 [1.1.10]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.10
 [1.1.11]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.11
 [1.1.12]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.12
+[1.1.15]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.15
