@@ -8,7 +8,7 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
-  - (placeholder)
+  - Refreshed `@plasius/schema` to `^1.2.17` and updated development dependency baselines to `@types/node@26.0.1`, `@typescript-eslint/*@8.62.0`, `eslint@10.6.0`, `globals@17.7.0`, and `vitest@4.1.9`.
 
 - **Fixed**
   - (placeholder)
