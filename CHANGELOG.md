@@ -8,6 +8,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.1.17] - 2026-06-28
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
   - Refreshed `@plasius/schema` to `^1.2.17` and updated development dependency baselines to `@types/node@26.0.1`, `@typescript-eslint/*@8.62.0`, `eslint@10.6.0`, `globals@17.7.0`, and `vitest@4.1.9`.
 
 - **Fixed**
@@ -208,3 +222,4 @@ All notable changes to this project are documented in this file.
 [1.1.12]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.12
 [1.1.15]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.15
 [1.1.16]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.16
+[1.1.17]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.17
