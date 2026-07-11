@@ -5,16 +5,21 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - Added an opt-in v2 semantic journey contract with strict catalogues, cryptographically random causal contexts, W3C `traceparent` propagation, bounded consequence receipts, deterministic local replay, and explicit evidence-gap reporting.
+  - Added delegated browser semantic interaction observation for explicit developer annotations without inspecting DOM content, values, URLs, keys, or coordinates.
+  - Added memory-only local journey queues and aggregate-only batching with count/byte limits, coalescing, idle rotation, idempotency keys, timeouts, cancellation, and bounded retry.
 
 - **Changed**
-  - (placeholder)
+  - Documented the architectural boundary between default local-private journeys and any future controlled-server replay governed as pseudonymous Personal Data.
 
 - **Fixed**
   - (placeholder)
 
 - **Security**
-  - (placeholder)
+  - Semantic input now has a fail-closed, non-echoing validation path that rejects unknown fields, unregistered attributes, unbounded values, and sensitive-looking content.
+  - Aggregate transport deliberately excludes journey, trace, event, producer, session, device, IP-derived, and user identifiers.
+  - Sources, targets, and consequence effects require immutable catalogue allowlists, and the privacy policy version is package-owned; aggregate Fetch requests omit credentials and referrers, reject redirects, and retain idempotency keys across ambiguous failures.
+  - Overrode the development toolchain to patched `esbuild` `^0.28.1` to remediate GHSA-g7r4-m6w7-qqqr.
 
 ## [1.1.17] - 2026-06-28
 

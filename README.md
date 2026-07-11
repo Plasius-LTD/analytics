@@ -20,6 +20,9 @@ Local-space analytics primitives for browser apps and reusable React components.
 - Trigger threshold callbacks for automated remediation workflows
 - Browser-lifecycle flush support (`visibilitychange`, `pagehide`, `sendBeacon`)
 - React provider and hooks for component-level event instrumentation
+- Local-private semantic journeys that join frontend intent to backend consequence
+- Aggregate-only adaptive batching with bounded queues, retries, and idempotency
+- Deterministic replay-style inference with explicit causal gaps and uncertainty
 
 ## Install
 
@@ -68,6 +71,73 @@ backendAnalytics.track({
 await frontendAnalytics.flush();
 await backendAnalytics.flush();
 ```
+
+## Local-Private Semantic Journeys
+
+Semantic journeys are an additive v2 API. The individual story remains in bounded, memory-only client state; `flush()` sends only coarse event-name/outcome counters. Aggregate payloads contain no journey, trace, event, producer, session, device, IP-derived, or user identifier.
+
+The client defaults to disabled. Hosts must pass the remotely resolved `platform.analytics.semantic-journeys.enabled` decision:
+
+```ts
+import {
+  SEMANTIC_JOURNEY_RECEIPT_HEADER,
+  createSemanticJourneyClient,
+  defineSemanticJourneyCatalog,
+} from "@plasius/analytics";
+
+const catalogue = defineSemanticJourneyCatalog({
+  "checkout.submit": { category: "interaction" },
+  "checkout.create": { category: "request" },
+  "order.create": {
+    category: "command",
+    effects: ["policy-denied"],
+  },
+}, { sources: ["site"] });
+
+declare const semanticJourneysEnabled: boolean;
+
+const journeys = createSemanticJourneyClient({
+  catalogue,
+  source: "site",
+  channel: "frontend",
+  runtime: "browser",
+  enabled: semanticJourneysEnabled,
+  aggregateEndpoint: "/api/analytics/semantic-aggregates",
+});
+
+const intent = journeys.track({
+  name: "checkout.submit",
+  category: "interaction",
+  phase: "intent",
+  outcome: "unknown",
+  modality: "keyboard",
+});
+
+const request = journeys.beginRequest(
+  {
+    name: "checkout.create",
+    category: "request",
+    phase: "start",
+    outcome: "unknown",
+  },
+  { causedByEventId: intent?.eventId },
+);
+
+if (request) {
+  const response = await fetch("/api/orders", {
+    method: "POST",
+    headers: { traceparent: request.traceparent },
+  });
+  request.complete(response.headers.get(SEMANTIC_JOURNEY_RECEIPT_HEADER));
+}
+
+const replay = journeys.reconstruct();
+await journeys.flush();
+```
+
+Backends produce bounded, catalogue-validated consequence receipts with `serializeSemanticJourneyReceipts`. Each outbound request gets a fresh `traceparent`; neither the private journey ID nor an episode-wide trace crosses the boundary. Browser-wide semantic coverage is available through `observeSemanticJourneyInteractions`, which requires an explicit `enabled: true` rollout decision and observes only registered `data-plasius-event`, `data-plasius-target-type`, and `data-plasius-target-id` annotations without reading DOM text, form values, URLs, keys, pointer coordinates, or arbitrary attributes.
+
+Catalogue names, sources, targets, effects, and enum values must be reviewed developer-owned semantic classes, never application/entity identifiers or user-provided content. Sources are admitted by the catalogue-wide allowlist; targets and backend effects are admitted by per-event allowlists. The privacy policy version is the package-owned `strict.v1` constant and is not caller-configurable. Unknown or unregistered fields reject the whole event without echoing rejected values. Aggregate Fetch transport omits credentials and referrers and rejects redirects. Uploaded individual journeys are intentionally not supported by this local-private client; any future controlled-server replay mode must be separately gated and governed as pseudonymous Personal Data.
 
 ## Crash Reporting
 
@@ -195,6 +265,7 @@ npm run test:coverage
 ## Governance
 
 - ADRs: [docs/adrs](./docs/adrs)
+- Semantic journey design: [docs/design/privacy-safe-causal-journeys.md](./docs/design/privacy-safe-causal-journeys.md)
 - Security policy: [SECURITY.md](./SECURITY.md)
 - Legal docs: [legal](./legal)
 
