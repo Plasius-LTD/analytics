@@ -126,6 +126,40 @@ describe("semantic journey aggregate transport", () => {
     },
   );
 
+  it.each([
+    "Sun, 06 Nov 1994 08:49:37 GMT",
+    "Sunday, 06-Nov-94 08:49:37 GMT",
+    "Sun Nov  6 08:49:37 1994",
+  ])("accepts an RFC 9110 HTTP-date Retry-After value: %s", async (retryAfter) => {
+    const retryAt = Date.parse(retryAfter);
+    const transport = createDefaultSemanticJourneyAggregateTransport({
+      fetch: vi.fn().mockResolvedValue(new Response(null, {
+        status: 503,
+        headers: { "retry-after": retryAfter },
+      })),
+      now: () => retryAt - 1_000,
+    });
+    const error = await transport(request("https://example.test/events"))
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({
+      retryable: true,
+      status: 503,
+      retryAfterMs: 1_000,
+    });
+  });
+
+  it("rejects a syntactically date-shaped but invalid Retry-After value", async () => {
+    const transport = createDefaultSemanticJourneyAggregateTransport({
+      fetch: vi.fn().mockResolvedValue(new Response(null, {
+        status: 429,
+        headers: { "retry-after": "Sun, 99 Xxx 1994 08:49:37 GMT" },
+      })),
+    });
+    const error = await transport(request("https://example.test/events"))
+      .catch((caught: unknown) => caught);
+    expect((error as SemanticJourneyTransportError).retryAfterMs).toBeUndefined();
+  });
+
   it("fails closed for insecure endpoints before calling fetch", async () => {
     const fetchMock = vi.fn();
     const transport = createDefaultSemanticJourneyAggregateTransport({
