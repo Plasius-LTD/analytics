@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.2.0] - 2026-07-12
+
+- **Added**
   - Added an opt-in v2 semantic journey contract with strict catalogues, cryptographically random causal contexts, W3C `traceparent` propagation, bounded consequence receipts, deterministic local replay, and explicit evidence-gap reporting.
   - Added delegated browser semantic interaction observation for explicit developer annotations without inspecting DOM content, values, URLs, keys, or coordinates.
   - Added memory-only local journey queues and aggregate-only batching with count/byte limits, coalescing, idle rotation, idempotency keys, timeouts, cancellation, and bounded retry.
@@ -228,3 +242,4 @@ All notable changes to this project are documented in this file.
 [1.1.15]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.15
 [1.1.16]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.16
 [1.1.17]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.17
+[1.2.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.0
