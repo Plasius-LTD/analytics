@@ -11,6 +11,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.2.1] - 2026-07-12
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
   - Parse RFC 9110 `Retry-After` delay-seconds as integers only while retaining
     HTTP-date support and the existing five-minute retry cap.
 
@@ -244,3 +258,4 @@ All notable changes to this project are documented in this file.
 [1.1.16]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.16
 [1.1.17]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.17
 [1.2.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.0
+[1.2.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.1
