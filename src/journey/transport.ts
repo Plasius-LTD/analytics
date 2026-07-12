@@ -83,17 +83,22 @@ export function isSecureSemanticJourneyEndpoint(
   }
 }
 
+const HTTP_DATE_PATTERN = /^(?:[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT|[A-Za-z]+, \d{2}-[A-Za-z]{3}-\d{2} \d{2}:\d{2}:\d{2} GMT|[A-Za-z]{3} [A-Za-z]{3} [ \d]\d \d{2}:\d{2}:\d{2} \d{4})$/u;
+
 function parseRetryAfter(value: string | null, nowEpochMs: number): number | undefined {
   if (!value) {
     return undefined;
   }
 
-  const seconds = Number(value.trim());
-  if (Number.isFinite(seconds) && seconds >= 0) {
-    return Math.min(MAX_RETRY_AFTER_MS, Math.round(seconds * 1000));
+  const trimmed = value.trim();
+  if (/^(0|[1-9]\d*)$/u.test(trimmed)) {
+    return Math.min(MAX_RETRY_AFTER_MS, Number(trimmed) * 1000);
   }
 
-  const dateEpochMs = Date.parse(value);
+  if (!HTTP_DATE_PATTERN.test(trimmed)) {
+    return undefined;
+  }
+  const dateEpochMs = Date.parse(trimmed);
   if (!Number.isFinite(dateEpochMs)) {
     return undefined;
   }
