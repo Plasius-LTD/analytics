@@ -11,7 +11,8 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
-  - (placeholder)
+  - Parse RFC 9110 `Retry-After` delay-seconds as integers only while retaining
+    HTTP-date support and the existing five-minute retry cap.
 
 - **Security**
   - (placeholder)

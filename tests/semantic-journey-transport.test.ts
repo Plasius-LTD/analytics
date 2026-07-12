@@ -110,6 +110,22 @@ describe("semantic journey aggregate transport", () => {
     expect(String(error)).not.toContain("example.test");
   });
 
+  it.each(["1.5", "1e3", "120junk", "-1"])(
+    "rejects non-integer RFC 9110 Retry-After delay-seconds: %s",
+    async (retryAfter) => {
+      const transport = createDefaultSemanticJourneyAggregateTransport({
+        fetch: vi.fn().mockResolvedValue(new Response(null, {
+          status: 429,
+          headers: { "retry-after": retryAfter },
+        })),
+      });
+      const error = await transport(request("https://example.test/events"))
+        .catch((caught: unknown) => caught);
+      expect(error).toMatchObject({ retryable: true, status: 429 });
+      expect((error as SemanticJourneyTransportError).retryAfterMs).toBeUndefined();
+    },
+  );
+
   it("fails closed for insecure endpoints before calling fetch", async () => {
     const fetchMock = vi.fn();
     const transport = createDefaultSemanticJourneyAggregateTransport({

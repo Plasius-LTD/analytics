@@ -139,6 +139,11 @@ Backends produce bounded, catalogue-validated consequence receipts with `seriali
 
 Catalogue names, sources, targets, effects, and enum values must be reviewed developer-owned semantic classes, never application/entity identifiers or user-provided content. Sources are admitted by the catalogue-wide allowlist; targets and backend effects are admitted by per-event allowlists. The privacy policy version is the package-owned `strict.v1` constant and is not caller-configurable. Unknown or unregistered fields reject the whole event without echoing rejected values. Aggregate Fetch transport omits credentials and referrers and rejects redirects. Uploaded individual journeys are intentionally not supported by this local-private client; any future controlled-server replay mode must be separately gated and governed as pseudonymous Personal Data.
 
+Aggregate transport accepts RFC 9110 `Retry-After` integer delay-seconds and
+HTTP dates, capped at five minutes; malformed numeric forms are ignored.
+Runtime rollout inherits `governance.rfc-compliance-remediation.enabled`, with
+the disabled state retaining the prior transport only during migration.
+
 ## Crash Reporting
 
 ```ts
