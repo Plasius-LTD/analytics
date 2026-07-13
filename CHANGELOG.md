@@ -9,6 +9,20 @@ All notable changes to this project are documented in this file.
 
 - **Changed**
   - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.2.2] - 2026-07-13
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
   - Consume the RFC-remediated `@plasius/schema` release (task #34).
 
 - **Fixed**
@@ -260,3 +274,4 @@ All notable changes to this project are documented in this file.
 [1.1.17]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.1.17
 [1.2.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.0
 [1.2.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.1
+[1.2.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.2
