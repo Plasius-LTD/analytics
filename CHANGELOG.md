@@ -9,6 +9,7 @@ All notable changes to this project are documented in this file.
 
 - **Changed**
   - (placeholder)
+  - Consume the RFC-remediated `@plasius/schema` release (task #34).
 
 - **Fixed**
   - (placeholder)
