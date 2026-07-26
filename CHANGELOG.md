@@ -8,13 +8,14 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
-  - (placeholder)
+  - Standardized CI and trusted npm publication on Node 24.18.0 LTS.
+  - Refreshed transitive dependency resolutions to clear the current high-severity npm audit findings.
 
 - **Fixed**
   - (placeholder)
 
 - **Security**
-  - (placeholder)
+  - Added exact Git-index and npm-package inventory gates that reject the administrative contributor-registry path without reading it, and removed that path from the current source tip.
 
 ## [1.2.2] - 2026-07-13
 

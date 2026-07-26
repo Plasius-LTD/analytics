@@ -267,6 +267,14 @@ npm test
 npm run test:coverage
 ```
 
+## Public Artifact Integrity
+
+CI rejects the administrative contributor-registry path from both the exact Git
+index and the npm dry-run inventory without reading its contents. CI runs on the
+approved self-hosted runner group. Package publication uses Node 24.18.0 LTS and
+npm OIDC trusted publishing through the GitHub-hosted `production` CD job only;
+do not publish locally or configure a long-lived npm token.
+
 ## Governance
 
 - ADRs: [docs/adrs](./docs/adrs)
