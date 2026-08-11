@@ -18,6 +18,7 @@ All notable changes to this project are documented in this file.
 - **Security**
   - Added exact Git-index and npm-package inventory gates that reject the administrative contributor-registry path without reading it, and removed that path from the current source tip.
   - Removed the legacy npm write-token path and added a fail-closed Node 24 and npm 11.5.1-or-newer publication guard.
+  - Enabled same-repository pull-request CI while preventing fork PR code from executing on self-hosted runners.
 
 ## [1.2.2] - 2026-07-13
 

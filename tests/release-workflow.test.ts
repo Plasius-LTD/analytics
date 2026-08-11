@@ -6,6 +6,10 @@ const workflow = readFileSync(
   resolve(process.cwd(), ".github/workflows/cd.yml"),
   "utf8",
 );
+const ciWorkflow = readFileSync(
+  resolve(process.cwd(), ".github/workflows/ci.yml"),
+  "utf8",
+);
 
 describe("npm release trust boundary", () => {
   it("uses hosted production OIDC publication without a write token", () => {
@@ -31,5 +35,13 @@ describe("npm release trust boundary", () => {
     expect(workflow).toContain("Verify release runtime");
     expect(workflow).toContain('ACTUAL_NODE%%.*');
     expect(workflow).toContain('"11.5.1"');
+  });
+
+  it("runs same-repository pull requests on explicit trusted runners only", () => {
+    expect(ciWorkflow).toContain("pull_request:");
+    expect(ciWorkflow).toContain("runs-on: [self-hosted, Linux, X64]");
+    expect(ciWorkflow).toContain("github.event.pull_request.head.repo.full_name == github.repository");
+    expect(ciWorkflow).not.toContain("pull_request_target");
+    expect(ciWorkflow).not.toContain("fromJSON(vars.");
   });
 });
