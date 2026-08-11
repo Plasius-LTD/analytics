@@ -9,6 +9,7 @@ All notable changes to this project are documented in this file.
 
 - **Changed**
   - Standardized CI and trusted npm publication on Node 24.18.0 LTS.
+  - Bound publication to the prepared commit only while it remains the exact `main` head and has successful push-triggered CI.
   - Refreshed transitive dependency resolutions to clear the current high-severity npm audit findings.
 
 - **Fixed**
@@ -16,6 +17,7 @@ All notable changes to this project are documented in this file.
 
 - **Security**
   - Added exact Git-index and npm-package inventory gates that reject the administrative contributor-registry path without reading it, and removed that path from the current source tip.
+  - Removed the legacy npm write-token path and added a fail-closed Node 24 and npm 11.5.1-or-newer publication guard.
 
 ## [1.2.2] - 2026-07-13
 

@@ -273,7 +273,9 @@ CI rejects the administrative contributor-registry path from both the exact Git
 index and the npm dry-run inventory without reading its contents. CI runs on the
 approved self-hosted runner group. Package publication uses Node 24.18.0 LTS and
 npm OIDC trusted publishing through the GitHub-hosted `production` CD job only;
-do not publish locally or configure a long-lived npm token.
+do not publish locally or configure a long-lived npm token. CD publishes only
+while its prepared commit remains the exact `main` head, after successful
+push-triggered CI for that SHA, and on Node 24 with npm 11.5.1 or newer.
 
 ## Governance
 
