@@ -8,6 +8,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.2.3] - 2026-08-30
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
   - Standardized CI and trusted npm publication on Node 24.18.0 LTS.
   - Bound publication to the prepared commit only while it remains the exact `main` head and has successful push-triggered CI.
   - Refreshed transitive dependency resolutions to clear the current high-severity npm audit findings.
@@ -279,3 +293,4 @@ All notable changes to this project are documented in this file.
 [1.2.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.0
 [1.2.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.1
 [1.2.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.2
+[1.2.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.3
