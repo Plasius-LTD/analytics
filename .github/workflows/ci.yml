@@ -2,21 +2,23 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
 permissions:
   actions: read
   contents: read
 
 jobs:
   build-test:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on:
+      group: Public CI - Quarantined
+      labels: [self-hosted, Linux, X64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
+          package-manager-cache: false
 
       - name: Install deps
         run: npm ci --no-fund --no-audit --legacy-peer-deps
@@ -90,16 +92,17 @@ jobs:
   # BEGIN PLASIUS PUBLIC ARTIFACT INTEGRITY JOB
   public_artifact_integrity:
     name: Public artifact integrity
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on:
+      group: Public CI - Quarantined
+      labels: [self-hosted, Linux, X64]
     timeout-minutes: 10
     permissions:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
       - name: Verify public artifact integrity
