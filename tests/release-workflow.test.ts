@@ -40,11 +40,12 @@ describe("npm release trust boundary", () => {
   it("runs repository-owned pushes on explicit trusted runners only", () => {
     expect(ciWorkflow).toContain("push:");
     expect(ciWorkflow).toContain('branches: ["**"]');
-    expect(ciWorkflow.match(/runs-on: \$\{\{ fromJSON\(github\.event_name == 'pull_request'/gu)).toHaveLength(2);
+    expect(ciWorkflow.match(/runs-on: \$\{\{ fromJSON\(github\.ref == 'refs\/heads\/main'/gu)).toHaveLength(2);
     expect(ciWorkflow).toContain('["ubuntu-latest"]');
     expect(ciWorkflow).toContain('["self-hosted","Linux","X64"]');
     expect(ciWorkflow).not.toContain("pull_request:");
     expect(ciWorkflow).not.toContain("pull_request_target");
+    expect(ciWorkflow).not.toContain("github.event_name == 'pull_request'");
     expect(ciWorkflow).not.toContain("fromJSON(vars.");
   });
 });
