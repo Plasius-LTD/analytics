@@ -11,8 +11,9 @@ All notable changes to this project are documented in this file.
   - Raised the runtime `@plasius/schema` baseline to `^1.4.3` and refreshed the compatible development toolchain.
 
 - **Fixed**
-  - Restored hosted pull-request validation while reserving the quarantined
-    self-hosted runner group for trusted `main` pushes.
+  - Restored hosted pull-request and non-main branch validation while
+    reserving the quarantined self-hosted runner group for trusted `main`
+    pushes.
   - (placeholder)
 
 - **Security**
