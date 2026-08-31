@@ -8,6 +8,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.2.4] - 2026-08-31
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
   - Raised the runtime `@plasius/schema` baseline to `^1.4.3` and refreshed the compatible development toolchain.
 
 - **Fixed**
@@ -296,3 +310,4 @@ All notable changes to this project are documented in this file.
 [1.2.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.1
 [1.2.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.2
 [1.2.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.3
+[1.2.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.4
