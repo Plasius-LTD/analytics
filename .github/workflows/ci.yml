@@ -9,9 +9,7 @@ permissions:
 
 jobs:
   build-test:
-    runs-on:
-      group: Public CI - Quarantined
-      labels: [self-hosted, Linux, X64]
+    runs-on: ${{ fromJSON(github.ref == 'refs/heads/main' && '["self-hosted","Linux","X64"]' || '["ubuntu-latest"]') }}
     steps:
       - uses: actions/checkout@v6
 
@@ -92,9 +90,7 @@ jobs:
   # BEGIN PLASIUS PUBLIC ARTIFACT INTEGRITY JOB
   public_artifact_integrity:
     name: Public artifact integrity
-    runs-on:
-      group: Public CI - Quarantined
-      labels: [self-hosted, Linux, X64]
+    runs-on: ${{ fromJSON(github.ref == 'refs/heads/main' && '["self-hosted","Linux","X64"]' || '["ubuntu-latest"]') }}
     timeout-minutes: 10
     permissions:
       contents: read
