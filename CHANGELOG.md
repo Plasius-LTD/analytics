@@ -11,7 +11,9 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
-  - (placeholder)
+  - Keep optional metric code deferred when a host combines legacy root imports
+    with dynamic metric imports, with a regression check of the entire initial
+    dependency graph rather than only its entry file.
 
 - **Security**
   - (placeholder)

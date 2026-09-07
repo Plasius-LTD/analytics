@@ -263,7 +263,9 @@ Lazy collectors should import `projectUsefulMetric` and
 `USEFUL_METRIC_EVENT_DEFINITIONS` from `@plasius/analytics/metrics`. This standalone
 ESM/CJS entry contains no React, collectors or transport. Existing root exports
 remain compatible, but using the focused entry lets a bundler keep optional
-metric code out of a host's legacy-only initial analytics graph. The host must
+metric code out of a host's initial analytics graph, including when that host
+loads the metric entry dynamically. The published entries are independent bundles
+from one source, avoiding an eager shared metric chunk. The host must
 still verify its real application bundle and own flag evaluation and transport.
 
 Compose the fixed definitions into the host's semantic catalogue, then project
