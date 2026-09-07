@@ -259,6 +259,13 @@ function SaveButton() {
 
 ## Privacy-safe useful metrics
 
+Lazy collectors should import `projectUsefulMetric` and
+`USEFUL_METRIC_EVENT_DEFINITIONS` from `@plasius/analytics/metrics`. This standalone
+ESM/CJS entry contains no React, collectors or transport. Existing root exports
+remain compatible, but using the focused entry lets a bundler keep optional
+metric code out of a host's legacy-only initial analytics graph. The host must
+still verify its real application bundle and own flag evaluation and transport.
+
 Compose the fixed definitions into the host's semantic catalogue, then project
 one observation before tracking it with the existing bounded client:
 

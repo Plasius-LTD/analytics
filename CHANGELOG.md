@@ -5,7 +5,8 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - Standalone `@plasius/analytics/metrics` ESM/CJS entry for lazy metric adapters,
+    preserving root API compatibility and tree-shakeable fixed initialization.
 
 - **Changed**
   - (placeholder)
