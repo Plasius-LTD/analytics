@@ -1,7 +1,8 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: { index: "src/index.ts", metrics: "src/journey/metrics.ts" },
+  splitting: true,
   dts: true,
   sourcemap: true,
   clean: true,

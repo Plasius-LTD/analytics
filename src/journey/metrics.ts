@@ -21,7 +21,9 @@ const durationBuckets: readonly Bucket[] = [
 const duration = (category: SemanticJourneyCategory): MetricDefinition => ({
   category, outcome: "unknown", buckets: durationBuckets, maximum: 86_400_000,
 });
-const metrics: Readonly<Record<string, MetricDefinition>> = {
+// Fixed literal initialization is pure so hosts importing unrelated analytics
+// APIs can drop this optional metric module from their initial bundle.
+const metrics: Readonly<Record<string, MetricDefinition>> = /* @__PURE__ */ (() => ({
   "page.load": duration("presentation"),
   "route.ready": duration("presentation"),
   "world.ready": duration("presentation"),
@@ -50,7 +52,7 @@ const metrics: Readonly<Record<string, MetricDefinition>> = {
   "error.resource": { category: "error", outcome: "failure" },
   "error.render": { category: "error", outcome: "failure" },
   "error.unhandled": { category: "error", outcome: "failure" },
-};
+}))();
 
 /**
  * Fixed useful-metric catalogue entries for host catalogue composition and
@@ -60,12 +62,12 @@ const metrics: Readonly<Record<string, MetricDefinition>> = {
  */
 export const USEFUL_METRIC_EVENT_DEFINITIONS: Readonly<
   Record<string, Readonly<SemanticJourneyEventDefinition>>
-> = Object.freeze(Object.fromEntries(Object.entries(metrics).flatMap(([metric, definition]) => {
+> = /* @__PURE__ */ (() => Object.freeze(Object.fromEntries(Object.entries(metrics).flatMap(([metric, definition]) => {
   const names = definition.buckets
     ? definition.buckets.map(([, bucket]) => `metric.${metric}.${bucket}`)
     : [`metric.${metric}`];
   return names.map(name => [name, Object.freeze({ category: definition.category })]);
-})));
+}))))();
 
 /**
  * Projects one observation into a catalogue-controlled, identity-free event.
