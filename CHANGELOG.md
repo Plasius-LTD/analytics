@@ -11,6 +11,20 @@ All notable changes to this project are documented in this file.
   - (placeholder)
 
 - **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.3.2] - 2026-09-07
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
   - Keep optional metric code deferred when a host combines legacy root imports
     with dynamic metric imports, with a regression check of the entire initial
     dependency graph rather than only its entry file.
@@ -347,3 +361,4 @@ All notable changes to this project are documented in this file.
 [1.2.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.4
 [1.3.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.0
 [1.3.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.1
+[1.3.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.2
