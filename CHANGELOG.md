@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.3.1] - 2026-09-07
+
+- **Added**
   - Standalone `@plasius/analytics/metrics` ESM/CJS entry for lazy metric adapters,
     preserving root API compatibility and tree-shakeable fixed initialization.
 
@@ -330,3 +344,4 @@ All notable changes to this project are documented in this file.
 [1.2.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.3
 [1.2.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.2.4
 [1.3.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.0
+[1.3.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.1
