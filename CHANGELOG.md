@@ -5,7 +5,9 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - Fixed, privacy-safe useful-metric projection for bucketed load, readiness,
+    request and web-vital observations, error categories and anonymous activity
+    episodes; buckets survive the existing semantic aggregate transport.
 
 - **Changed**
   - (placeholder)

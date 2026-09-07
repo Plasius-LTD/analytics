@@ -257,6 +257,55 @@ function SaveButton() {
 }
 ```
 
+## Privacy-safe useful metrics
+
+Compose the fixed definitions into the host's semantic catalogue, then project
+one observation before tracking it with the existing bounded client:
+
+```ts
+import {
+  USEFUL_METRIC_EVENT_DEFINITIONS,
+  defineSemanticJourneyCatalog,
+  projectUsefulMetric,
+} from "@plasius/analytics";
+
+const catalogue = defineSemanticJourneyCatalog(
+  USEFUL_METRIC_EVENT_DEFINITIONS,
+  { sources: ["plasius.site"] },
+);
+const event = projectUsefulMetric({ metric: "page.load", value: 1250 });
+// Configure your host client with catalogue; if enabled and event !== null,
+// call client.track(event). No direct send or flush is needed per observation.
+```
+
+Duration keys (milliseconds): `page.load`, `route.ready`, `world.ready`,
+`request.duration`, `vital.lcp`, `vital.fcp`, `vital.inp`, `vital.ttfb` and
+`episode.active-duration`. `vital.cls` accepts a unitless layout-shift score.
+Durations must be finite, non-negative and <=24 hours; CLS must be <=100.
+
+Counters accept only `{ metric }`: `episode.started`, `episode.completed`,
+`request.started`, `request.completed`, `request.failed`, `request.cancelled`,
+`request.rejected`, `error.runtime`, `error.resource`, `error.render`, and
+`error.unhandled`. All other fields/names, accessors and invalid measurements
+return `null`, including legacy NFR objects containing URL/DOM/error metadata.
+
+There are 84 fixed catalogue entries. Numeric values become bounded event-name
+buckets, not attributes or raw measurements, so histograms survive the existing
+aggregate format. General durations use upper-exclusive boundaries at 100, 250,
+500, 1000, 2500, 5000 and 10000 ms; active episodes at 10, 60, 300, 900 and 3600
+seconds; CLS at 0.1 and 0.25. Final buckets include all remaining valid values.
+
+The host must evaluate its remote rollout flag, cap observation frequency,
+dispose collectors/client on rollback, and emit only one final web-vital
+observation per measurement period. Episode counts are in-memory activity
+periods, not unique users or cross-tab sessions: exclude hidden time and disclose
+reload/tab duplication and lost final observations. No identifiers or persistence
+are needed. Metric error categories never accept an Error object or message.
+
+The service must approve the same fixed definitions and process these counters
+before useful metric delivery can be claimed. This helper installs no collectors
+or transport and does not certify legacy analytics payloads as privacy-safe.
+
 ## Development
 
 ```bash

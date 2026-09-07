@@ -2,6 +2,7 @@ export * from "./types.js";
 export * from "./catalog.js";
 export * from "./context.js";
 export * from "./aggregate.js";
+export * from "./metrics.js";
 export * from "./transport.js";
 export * from "./receipt.js";
 export * from "./replay.js";
