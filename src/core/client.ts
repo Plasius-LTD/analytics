@@ -314,11 +314,13 @@ async function defaultTransport({
   body,
   headers,
   keepalive,
+  signal,
 }: {
   endpoint: string;
   body: string;
   headers: Record<string, string>;
   keepalive: boolean;
+  signal?: AbortSignal;
 }): Promise<void> {
   if (typeof fetch !== "function") {
     return;
@@ -329,6 +331,7 @@ async function defaultTransport({
     headers,
     body,
     keepalive,
+    signal,
   });
 
   if (!response.ok) {
@@ -1131,6 +1134,7 @@ export function createLocalSpaceAnalyticsClient(
   let isFlushing = false;
   let flushQueuedAfterCurrent = false;
   let isDestroyed = false;
+  const transportController = new AbortController();
 
   const issueAggregates = new Map<string, IssueAggregateState>();
 
@@ -1361,12 +1365,14 @@ export function createLocalSpaceAnalyticsClient(
         headers: resolvedConfig.headers,
         // Normal flushes do not need fetch keepalive; unload/pagehide uses sendBeacon.
         keepalive: false,
+        signal: transportController.signal,
       });
 
+      if (transportController.signal.aborted) return;
       queue = queue.slice(events.length);
       persistQueue();
     } catch (error) {
-      resolvedConfig.onError?.(error);
+      if (!transportController.signal.aborted) resolvedConfig.onError?.(error);
     } finally {
       isFlushing = false;
 
@@ -1595,7 +1601,14 @@ export function createLocalSpaceAnalyticsClient(
       return resolvedConfig;
     },
 
-    destroy() {
+    destroy(options) {
+      if (options?.discard) {
+        transportController.abort();
+        queue = [];
+        flushQueuedAfterCurrent = false;
+        issueAggregates.clear();
+        writeQueue(resolvedConfig.storageKey, []);
+      }
       if (isDestroyed) {
         return;
       }

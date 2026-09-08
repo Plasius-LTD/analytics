@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+- Add opt-in discard disposal and transport cancellation for consent withdrawal,
+  preventing late uploads from restoring cleared browser queues (#54).
+
 - **Added**
   - (placeholder)
 
