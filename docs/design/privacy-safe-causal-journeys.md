@@ -13,6 +13,16 @@
 
 ## Intent
 
+September 2026 completion decisions: the site is retiring unrestricted legacy
+ingestion and deleting legacy analytics history without conversion. SDK legacy
+APIs remain compatible, but they are not an approved fallback on host rollback.
+Individual server replay and its viewer remain outside this delivery. Optional
+capture requires consent plus stored remote permission; all analytics and
+derived copies have a 30-day maximum with cleanup beginning at 28 days. See the
+[2.1 aggregate projection design](aggregate-projections.md) and site completion
+design under Story #2160. These decisions supersede older host compatibility
+and future-viewer delivery statements below, not the local-private boundary.
+
 Turn analytics from isolated interaction counters into a semantic causal ledger that can explain:
 
 - what a person attempted;

@@ -5,13 +5,18 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - Opt-in catalogue-owned `2.1-aggregate` views and a shared fail-closed ingress
+    validator with exact application producer bindings and strict 2.0 support.
+  - Bounded projected aggregation by original observation hour, immutable retry
+    snapshots and discard-safe expiry/acknowledgements in the shared client.
 
 - **Changed**
-  - (placeholder)
+  - Projected clients default to at most two batches per flush. Existing clients
+    without an aggregate policy retain their strict 2.0 behaviour.
 
 - **Fixed**
-  - (placeholder)
+  - Reject projected batch byte budgets that cannot fit an approved row before
+    collection starts, preventing large views from blocking later delivery.
 
 - **Security**
   - (placeholder)

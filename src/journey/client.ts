@@ -1,8 +1,13 @@
 import type { AnalyticsChannel, AnalyticsRuntime } from "../core/types.js";
 import {
   SemanticJourneyAggregateStore,
-  type SemanticJourneyAggregateBatch,
 } from "./aggregate.js";
+import {
+  isSemanticJourneyAggregatePolicy,
+  type SemanticJourneyAggregatePolicy,
+  type SemanticJourneyWireAggregateBatch,
+} from "./aggregate-policy.js";
+import { ProjectedSemanticJourneyAggregateStore } from "./projected-aggregate-store.js";
 import {
   isSemanticSource,
   validateSemanticJourneyEventInput,
@@ -101,6 +106,8 @@ export interface SemanticJourneyRequestLink {
 /** Configuration for a local-private semantic journey producer. */
 export interface SemanticJourneyClientConfig {
   readonly catalogue: SemanticJourneyCatalog;
+  /** Opt in to reviewed 2.1 views; omitted retains strict 2.0 aggregate output. */
+  readonly aggregatePolicy?: SemanticJourneyAggregatePolicy;
   readonly source: string;
   readonly channel?: AnalyticsChannel;
   readonly runtime?: AnalyticsRuntime;
@@ -151,6 +158,7 @@ export interface SemanticJourneyClient {
 
 interface ResolvedSemanticJourneyClientConfig {
   readonly catalogue: SemanticJourneyCatalog;
+  readonly aggregatePolicy?: SemanticJourneyAggregatePolicy;
   readonly source: string;
   readonly channel: AnalyticsChannel;
   readonly runtime: AnalyticsRuntime;
@@ -271,6 +279,10 @@ function resolveConfig(
   if (!config.catalogue.sources.includes(config.source)) {
     return invalidConfig();
   }
+  if (config.aggregatePolicy !== undefined && (
+    !isSemanticJourneyAggregatePolicy(config.aggregatePolicy)
+    || JSON.stringify(config.aggregatePolicy.catalogue) !== JSON.stringify(config.catalogue)
+  )) return invalidConfig();
   if (
     config.aggregateEndpoint !== undefined &&
     !isAllowedEndpoint(config.aggregateEndpoint, config.aggregateBaseUrl)
@@ -294,6 +306,7 @@ function resolveConfig(
 
   return {
     catalogue: config.catalogue,
+    ...(config.aggregatePolicy ? { aggregatePolicy: config.aggregatePolicy } : {}),
     source: config.source,
     channel: resolveChannel(config.channel, runtime),
     runtime,
@@ -328,7 +341,7 @@ function resolveConfig(
     ),
     maxBatchesPerFlush: resolveInteger(
       config.maxBatchesPerFlush,
-      DEFAULT_MAX_BATCHES_PER_FLUSH,
+      config.aggregatePolicy ? 2 : DEFAULT_MAX_BATCHES_PER_FLUSH,
       1,
       MAX_BATCHES_PER_FLUSH
     ),
@@ -455,12 +468,14 @@ export function createSemanticJourneyClient(
   } catch {
     return invalidConfig();
   }
-  const aggregateStore = new SemanticJourneyAggregateStore({
-    catalogue: config.catalogue,
-    source: config.source,
-    channel: config.channel,
-    runtime: config.runtime,
-  });
+  const binding = { source: config.source, channel: config.channel, runtime: config.runtime };
+  const aggregateStore = config.aggregatePolicy
+    ? new ProjectedSemanticJourneyAggregateStore({
+      ...binding, policy: config.aggregatePolicy, maxPendingCounters: config.maxQueueEvents,
+      maxPendingBytes: config.maxQueueBytes, maxBatchBytes: config.aggregateMaxBytes,
+      maxAgeMs: config.maxEventAgeMs, now: config.now,
+    })
+    : new SemanticJourneyAggregateStore({ ...binding, catalogue: config.catalogue });
   const queue: QueuedEvent[] = [];
   const contextByEventId = new Map<string, SemanticJourneyContext>();
   let episode: LocalEpisode | undefined;
@@ -468,7 +483,7 @@ export function createSemanticJourneyClient(
   let destroyed = false;
   let aggregateGeneration = 0;
   let aggregateController = new AbortController();
-  let pendingBatch: SemanticJourneyAggregateBatch | undefined;
+  let pendingBatch: SemanticJourneyWireAggregateBatch | undefined;
   let flushInFlight: Promise<void> | undefined;
   let activeTransportController: AbortController | undefined;
   let interval: ReturnType<typeof globalThis.setInterval> | undefined;
@@ -585,7 +600,12 @@ export function createSemanticJourneyClient(
       }),
     });
 
-    aggregateStore.record(event.name, event.outcome);
+    if (aggregateStore instanceof ProjectedSemanticJourneyAggregateStore) {
+      if (!aggregateStore.recordEvent({
+        name: validated.name, category: validated.category, phase: validated.phase,
+        outcome: validated.outcome, attributes: validated.attributes,
+      }, nowEpochMs)) notifyDrop("queue-limit");
+    } else aggregateStore.record(event.name, event.outcome);
     if (
       shouldCoalesce(
         queue[queue.length - 1]?.event,
@@ -833,7 +853,7 @@ export function createSemanticJourneyClient(
   };
 
   const sendWithTimeout = async (
-    batch: SemanticJourneyAggregateBatch,
+    batch: SemanticJourneyWireAggregateBatch,
     keepalive: boolean
   ): Promise<void> => {
     if (!config.aggregateEndpoint) {
@@ -893,13 +913,19 @@ export function createSemanticJourneyClient(
   };
 
   const sendBatch = async (
-    batch: SemanticJourneyAggregateBatch,
+    batch: SemanticJourneyWireAggregateBatch,
     keepalive: boolean,
     signal: AbortSignal
   ): Promise<"sent" | "retained" | "discarded"> => {
     for (let attempt = 0; attempt <= config.maxRetries; attempt += 1) {
       if (destroyed || signal.aborted) {
         return "retained";
+      }
+      if (aggregateStore instanceof ProjectedSemanticJourneyAggregateStore
+        && batch.schemaVersion === "2.1-aggregate"
+        && !aggregateStore.isPendingBatch(batch, config.now())) {
+        notifyDrop("expired");
+        return "discarded";
       }
       try {
         await sendWithTimeout(batch, keepalive);
@@ -941,6 +967,9 @@ export function createSemanticJourneyClient(
       sentBatchCount < config.maxBatchesPerFlush;
       sentBatchCount += 1
     ) {
+      if (aggregateStore instanceof ProjectedSemanticJourneyAggregateStore
+        && pendingBatch?.schemaVersion === "2.1-aggregate"
+        && !aggregateStore.isPendingBatch(pendingBatch, config.now())) pendingBatch = undefined;
       const batch =
         pendingBatch ??
         aggregateStore.createBatch({
@@ -961,7 +990,9 @@ export function createSemanticJourneyClient(
       if (result === "retained") {
         return;
       }
-      aggregateStore.acknowledge(batch);
+      if (aggregateStore instanceof ProjectedSemanticJourneyAggregateStore) {
+        if (batch.schemaVersion === "2.1-aggregate") aggregateStore.acknowledge(batch);
+      } else if (batch.schemaVersion === "2.0-aggregate") aggregateStore.acknowledge(batch);
       pendingBatch = undefined;
     }
   };

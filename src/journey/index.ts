@@ -2,6 +2,8 @@ export * from "./types.js";
 export * from "./catalog.js";
 export * from "./context.js";
 export * from "./aggregate.js";
+export * from "./aggregate-policy.js";
+export * from "./projected-aggregate-store.js";
 export * from "./metrics.js";
 export * from "./transport.js";
 export * from "./receipt.js";

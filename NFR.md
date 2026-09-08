@@ -384,6 +384,20 @@ Systems should expose metrics for:
 
 Distributed tracing should allow tracking requests across service boundaries.
 
+### Event quality gate
+
+User-interaction and metric producers must use reviewed semantic catalogues and
+explicit host-owned lifecycle/transport. New aggregate views follow the
+[projection contract](docs/design/aggregate-projections.md): finite dimensions,
+exact producer bindings, original observation hours, bounded memory/bytes/retry
+and fail-closed ingress validation. Individual causal IDs remain local-private.
+
+Hosts must verify consent and stored flags before optional capture, discard on
+withdrawal, enforce retention and demonstrate aggregate processing/reporting at
+the exact released revision. Raw text, URLs, values, coordinates, errors/stacks,
+identity fields and stable session identifiers are not approved semantic data.
+An installed dependency or SDK release is not evidence of host compliance.
+
 ---
 
 ## 11. Accessibility

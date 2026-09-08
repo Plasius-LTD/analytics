@@ -37,7 +37,12 @@ Local-space analytics primitives for browser apps and reusable React components.
 npm install @plasius/analytics
 ```
 
-## Core API
+## Legacy Core API
+
+The API below is a compatibility surface, not the privacy-safe event NFR path.
+New integrations should use the opt-in semantic client and approved aggregate
+contract below. The Plasius site is retiring unrestricted legacy ingestion;
+do not forward these legacy records to the semantic endpoint.
 
 ```ts
 import {
@@ -82,6 +87,79 @@ await backendAnalytics.flush();
 ## Local-Private Semantic Journeys
 
 Semantic journeys are an additive v2 API. The individual story remains in bounded, memory-only client state; `flush()` sends only coarse event-name/outcome counters. Aggregate payloads contain no journey, trace, event, producer, session, device, IP-derived, or user identifier.
+
+### Reviewed aggregate views (2.1)
+
+For screen/action or world/metric breakdowns, explicitly opt in to catalogue-owned
+projections. An ordinary event attribute is **not** automatically uploaded:
+
+```ts
+import {
+  defineSemanticJourneyCatalog,
+  defineSemanticJourneyAggregatePolicy,
+  createSemanticJourneyAggregateValidator,
+  createSemanticJourneyClient,
+} from "@plasius/analytics";
+
+const catalogue = defineSemanticJourneyCatalog({
+  "ui.control.activate": {
+    category: "interaction",
+    attributes: {
+      screen: { type: "enum", values: ["home", "generator"] },
+      action: { type: "enum", values: ["select", "retry"] },
+    },
+  },
+}, { sources: ["plasius.site"] });
+const aggregatePolicy = defineSemanticJourneyAggregatePolicy(catalogue, {
+  bindings: [{ source: "plasius.site", channel: "frontend", runtime: "browser" }],
+  projections: {
+    "ui.control.activate": { "screen-action": ["screen", "action"] },
+  },
+});
+declare const analyticsConsentAndRemotePermission: boolean;
+const client = createSemanticJourneyClient({
+  catalogue, aggregatePolicy, source: "plasius.site", channel: "frontend", runtime: "browser",
+  enabled: analyticsConsentAndRemotePermission,
+  aggregateEndpoint: "/api/analytics/semantic-aggregates",
+});
+client.track({ name: "ui.control.activate", category: "interaction", phase: "intent",
+  outcome: "success", attributes: { screen: "home", action: "select" } });
+
+// Receiving hosts compile the same policy, then validate a bounded JSON body.
+const validateAggregate = createSemanticJourneyAggregateValidator(aggregatePolicy);
+// On consent withdrawal: client.destroy(); (discard, cancel; no flush).
+```
+
+Each 2.1 counter contains a `view` and its exact registered enum `dimensions`.
+The independent `total` view has no dimensions. Never sum across views. Missing
+optional attributes omit their view; unknown fields/values reject the event.
+Numeric/boolean attributes, private context, targets and causal IDs are not
+projectable. Hosts must review the meaning of their finite tokens; grammar is
+not an anonymity guarantee.
+
+Policies allow at most 128 exact producer bindings, eight views per event, four
+enum dimensions per view and 4,096 value combinations per view. The generated
+validator rejects duplicate counter keys, unsafe counts, unknown fields and
+payloads above 500 rows/64 KiB; bound HTTP reads before parsing as well.
+
+The shared client keeps one retry snapshot and original observation hours, with
+projected rows bounded by its queue count/byte/age settings (default 1,000 rows,
+1 MiB, 30 minutes). To preserve consistency, expiry discards the whole pending
+hour when its oldest row expires, potentially discarding newer observations in
+that hour. Drops are reported, not silently retained. Projected clients default
+to two 48-KiB batches per 60-second flush, two retries and five-second deadlines.
+Client construction rejects `aggregateMaxBytes` if the budget cannot fit every
+approved single-row envelope, including maximum safe counters and diagnostics.
+Standalone projected stores validate their `maxBatchBytes` ceiling the same way;
+per-batch overrides must fit the policy and remain within that ceiling.
+No policy means unchanged strict 2.0 output. The validator explicitly supports
+strict 2.0 input; it does not accept unrestricted legacy event packets.
+
+Hosts own consent and remote controls, storage/retention, deduplication,
+processing and low-volume report suppression. Shipping this SDK enables none of
+those production behaviours. See [projection design](docs/design/aggregate-projections.md).
+
+### Local causal capture and receipts
 
 The client defaults to disabled. Hosts must pass the remotely resolved `platform.analytics.semantic-journeys.enabled` decision:
 
