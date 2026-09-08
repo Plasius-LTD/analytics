@@ -18,6 +18,46 @@ const options = { batchId: "a".repeat(32), nowEpochMs: start, maxCounters: 50, m
 const storeOptions = { policy, ...binding, now: () => start };
 
 describe("projected aggregate store", () => {
+  it("rejects incompatible byte limits up front and drains maximum-size valid rows at a compatible limit", () => {
+    const name = "w".repeat(64);
+    const view = "v".repeat(64);
+    const dimensions = ["s", "m", "t", "r"].map((letter) => letter.repeat(64));
+    const value = "q".repeat(64);
+    const largeCatalogue = defineSemanticJourneyCatalog({
+      [name]: { category: "interaction", attributes: Object.fromEntries(dimensions.map((dimension) =>
+        [dimension, { type: "enum" as const, values: ["short", value] }])) },
+      "z.later": { category: "state" },
+    }, { sources: [binding.source] });
+    const largePolicy = defineSemanticJourneyAggregatePolicy(largeCatalogue, {
+      bindings: [binding], projections: { [name]: { [view]: dimensions } },
+    });
+    expect(() => new ProjectedSemanticJourneyAggregateStore({ ...storeOptions,
+      policy: largePolicy, maxBatchBytes: 512 })).toThrow();
+    const store = new ProjectedSemanticJourneyAggregateStore({ ...storeOptions,
+      policy: largePolicy, maxBatchBytes: 2048 });
+    // Even a per-call override fails on an empty store, before observing data.
+    expect(() => store.createBatch({ ...options, maxBytes: 512 })).toThrow();
+    store.recordEvent({ name, category: "interaction", phase: "end", outcome: "cancelled",
+      attributes: Object.fromEntries(dimensions.map((dimension) => [dimension, value])) }, start, Number.MAX_SAFE_INTEGER);
+    store.recordEvent({ name: "z.later", category: "state", phase: "end", outcome: "success" }, start);
+    store.recordDropped(Number.MAX_SAFE_INTEGER);
+    store.recordCoalesced(Number.MAX_SAFE_INTEGER);
+    const emitted = [];
+    for (let index = 0; index < 3; index++) {
+      if (index > 0) {
+        store.recordDropped(Number.MAX_SAFE_INTEGER);
+        store.recordCoalesced(Number.MAX_SAFE_INTEGER);
+      }
+      const batch = store.createBatch({ ...options, maxCounters: 1, maxBytes: 2048 })!;
+      expect(createSemanticJourneyAggregateValidator(largePolicy)(batch)).toBe(true);
+      expect(new TextEncoder().encode(JSON.stringify(batch)).length).toBeLessThanOrEqual(2048);
+      emitted.push(...batch.counters);
+      store.acknowledge(batch);
+    }
+    expect(emitted.map((row) => row.eventName)).toContain("z.later");
+    expect(store.createBatch({ ...options, maxBytes: 2048 })).toBeNull();
+  });
+
   it("retains original observation hours across rollover and delayed flush", () => {
     const store = new ProjectedSemanticJourneyAggregateStore(storeOptions);
     store.recordEvent(event, start);

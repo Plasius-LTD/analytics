@@ -472,7 +472,8 @@ export function createSemanticJourneyClient(
   const aggregateStore = config.aggregatePolicy
     ? new ProjectedSemanticJourneyAggregateStore({
       ...binding, policy: config.aggregatePolicy, maxPendingCounters: config.maxQueueEvents,
-      maxPendingBytes: config.maxQueueBytes, maxAgeMs: config.maxEventAgeMs, now: config.now,
+      maxPendingBytes: config.maxQueueBytes, maxBatchBytes: config.aggregateMaxBytes,
+      maxAgeMs: config.maxEventAgeMs, now: config.now,
     })
     : new SemanticJourneyAggregateStore({ ...binding, catalogue: config.catalogue });
   const queue: QueuedEvent[] = [];

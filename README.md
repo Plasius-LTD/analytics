@@ -148,6 +148,10 @@ projected rows bounded by its queue count/byte/age settings (default 1,000 rows,
 hour when its oldest row expires, potentially discarding newer observations in
 that hour. Drops are reported, not silently retained. Projected clients default
 to two 48-KiB batches per 60-second flush, two retries and five-second deadlines.
+Client construction rejects `aggregateMaxBytes` if the budget cannot fit every
+approved single-row envelope, including maximum safe counters and diagnostics.
+Standalone projected stores validate their `maxBatchBytes` ceiling the same way;
+per-batch overrides must fit the policy and remain within that ceiling.
 No policy means unchanged strict 2.0 output. The validator explicitly supports
 strict 2.0 input; it does not accept unrestricted legacy event packets.
 

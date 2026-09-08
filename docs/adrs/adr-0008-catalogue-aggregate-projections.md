@@ -20,6 +20,9 @@ projected; timing and gesture counts must first become finite bucket tokens.
 
 Independent views include a dimensionless total and must not be summed together.
 Bound policy/cardinality, rows, bytes, ages, retries and concurrent snapshots.
+Reject batch ceilings that cannot fit every approved single-row envelope at
+construction, including maximum counter and diagnostic values. Check per-batch
+overrides against the same bound so no accepted row can strand the queue.
 Preserve original observation hours and never extend expiry through retry.
 Expire a pending hour together if its oldest row expires, preventing surviving
 view cells from outliving their total. Report conservative discards explicitly.

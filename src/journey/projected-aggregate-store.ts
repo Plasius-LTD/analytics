@@ -16,6 +16,8 @@ export interface ProjectedSemanticJourneyAggregateStoreOptions extends SemanticJ
   readonly policy: SemanticJourneyAggregatePolicy;
   readonly maxPendingCounters?: number;
   readonly maxPendingBytes?: number;
+  /** Batch ceiling, checked against every approved row before any capture. */
+  readonly maxBatchBytes?: number;
   readonly maxAgeMs?: number;
   readonly now?: () => number;
 }
@@ -47,6 +49,31 @@ function key(timeBucket: string, counter: SemanticJourneyProjectedAggregateCount
   return `${timeBucket}\0${semanticJourneyAggregateCounterKey(counter)}`;
 }
 
+/** Exact worst-case single-row envelope, without enumerating value products. */
+function minimumBatchBytes(options: ProjectedSemanticJourneyAggregateStoreOptions): number {
+  const envelope = {
+    schemaVersion: "2.1-aggregate", batchId: "a".repeat(32),
+    source: options.source, channel: options.channel, runtime: options.runtime,
+    timeBucket: "9999-12-31T23:00:00.000Z", policyVersion: "strict.v1",
+    dropped: Number.MAX_SAFE_INTEGER, coalesced: Number.MAX_SAFE_INTEGER,
+  };
+  let minimum = bytes({ ...envelope, counters: [] });
+  for (const [eventName, definition] of Object.entries(options.policy.catalogue.definitions)) {
+    const base = { eventName, outcome: "cancelled", count: Number.MAX_SAFE_INTEGER };
+    minimum = Math.max(minimum, bytes({ ...envelope, counters: [{ ...base, view: "total", dimensions: {} }] }));
+    for (const [view, names] of Object.entries(options.policy.projections[eventName] ?? {})) {
+      const dimensions: Record<string, string> = Object.create(null);
+      for (const name of names) {
+        const attribute = definition.attributes?.[name];
+        if (attribute?.type !== "enum") return invalid();
+        dimensions[name] = attribute.values.reduce((longest, value) => bytes(value) > bytes(longest) ? value : longest);
+      }
+      minimum = Math.max(minimum, bytes({ ...envelope, counters: [{ ...base, view, dimensions }] }));
+    }
+  }
+  return minimum;
+}
+
 /**
  * Holds a bounded set of independent aggregate views by original observation
  * hour. One immutable retry snapshot is retained; no event IDs enter this store.
@@ -55,6 +82,8 @@ export class ProjectedSemanticJourneyAggregateStore {
   private readonly options: ProjectedSemanticJourneyAggregateStoreOptions;
   private readonly maxCounters: number;
   private readonly maxBytes: number;
+  private readonly maxBatchBytes: number;
+  private readonly minimumBatchBytes: number;
   private readonly maxAge: number;
   private readonly counters = new Map<string, PendingCounter>();
   private pendingBytes = 0;
@@ -69,6 +98,8 @@ export class ProjectedSemanticJourneyAggregateStore {
       binding.source === options.source && binding.channel === options.channel && binding.runtime === options.runtime)) invalid();
     this.maxCounters = limit(options.maxPendingCounters, 1000, 1, 5000);
     this.maxBytes = limit(options.maxPendingBytes, 1024 * 1024, 512, 8 * 1024 * 1024);
+    this.minimumBatchBytes = minimumBatchBytes(options);
+    this.maxBatchBytes = limit(options.maxBatchBytes, 48 * 1024, Math.max(512, this.minimumBatchBytes), 60 * 1024);
     this.maxAge = limit(options.maxAgeMs, 30 * 60 * 1000, 1, 86_400_000);
     if (options.now !== undefined && typeof options.now !== "function") invalid();
     this.options = Object.freeze({ ...options });
@@ -120,7 +151,7 @@ export class ProjectedSemanticJourneyAggregateStore {
     hour(options.nowEpochMs);
     if (!isEventId(options.batchId)) return invalid();
     const maxCounters = limit(options.maxCounters, 50, 1, 500);
-    const maxBytes = limit(options.maxBytes, 48 * 1024, 512, 60 * 1024);
+    const maxBytes = limit(options.maxBytes, this.maxBatchBytes, Math.max(512, this.minimumBatchBytes), this.maxBatchBytes);
     this.prune(options.nowEpochMs);
     if (this.pending) return this.pending.batch;
     const entries = this.sorted();

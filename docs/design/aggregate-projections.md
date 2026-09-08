@@ -39,6 +39,14 @@ expiry, capacity rejection and cancellation must not resurrect discarded data.
 Turning consent/remote permission off destroys/discards through the host's
 lifecycle; importing the package installs no observers or senders.
 
+At construction, the projected store checks `maxBatchBytes` (48 KiB by default)
+against the largest approved single-row envelope, including maximum safe counts
+and diagnostics. The client supplies its `aggregateMaxBytes` to this check.
+Incompatible configurations fail before capture; a later per-batch override
+must also fit every approved row and stay within the configured ceiling. This
+prevents a valid large projection from indefinitely blocking later counters,
+without dropping partial views or exceeding the caller's byte budget.
+
 ## Delivery and acceptance
 
 No source change to legacy core/react consent disposal (#54) belongs here.

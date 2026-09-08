@@ -18,6 +18,22 @@ function config(extra: Partial<SemanticJourneyClientConfig> = {}): SemanticJourn
 }
 
 describe("opt-in projected shared client", () => {
+  it("rejects a byte budget that cannot fit every approved projection before installing collection", () => {
+    const dimension = "s".repeat(64);
+    const largeCatalogue = defineSemanticJourneyCatalog({ "ui.control.activate": {
+      category: "interaction", attributes: { [dimension]: { type: "enum", values: ["q".repeat(64)] } },
+    } }, { sources: ["plasius.site"] });
+    const largePolicy = defineSemanticJourneyAggregatePolicy(largeCatalogue, {
+      bindings: policy.bindings, projections: { "ui.control.activate": { ["v".repeat(64)]: [dimension] } },
+    });
+    const transport = vi.fn();
+    expect(() => createSemanticJourneyClient(config({ catalogue: largeCatalogue, aggregatePolicy: largePolicy,
+      aggregateMaxBytes: 512, autoFlush: true, aggregateTransport: transport }))).toThrow();
+    expect(transport).not.toHaveBeenCalled();
+    const compatible = createSemanticJourneyClient(config({ aggregateMaxBytes: 512 }));
+    compatible.destroy();
+  });
+
   it("sends reviewed projections through the existing transport without local identifiers", async () => {
     const bodies: string[] = [];
     const client = createSemanticJourneyClient(config({ aggregateTransport: async ({ body }) => { bodies.push(body); } }));

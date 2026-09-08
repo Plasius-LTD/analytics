@@ -15,7 +15,8 @@ All notable changes to this project are documented in this file.
     without an aggregate policy retain their strict 2.0 behaviour.
 
 - **Fixed**
-  - (placeholder)
+  - Reject projected batch byte budgets that cannot fit an approved row before
+    collection starts, preventing large views from blocking later delivery.
 
 - **Security**
   - (placeholder)
