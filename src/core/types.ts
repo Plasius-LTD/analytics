@@ -107,6 +107,8 @@ export interface AnalyticsTransportRequest {
   body: string;
   headers: Record<string, string>;
   keepalive: boolean;
+  /** Aborted when the host discards this client after consent withdrawal. */
+  signal?: AbortSignal;
 }
 
 export type AnalyticsTransport = (
@@ -166,5 +168,6 @@ export interface LocalSpaceAnalyticsClient {
   flush: () => Promise<void>;
   updateConfig: (config: Partial<LocalSpaceAnalyticsConfig>) => void;
   getConfig: () => Readonly<ResolvedLocalSpaceAnalyticsConfig>;
-  destroy: () => void;
+  /** Stop the client; discard also cancels transport and clears retained data. */
+  destroy: (options?: { discard?: boolean }) => void;
 }

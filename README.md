@@ -1,5 +1,12 @@
 # @plasius/analytics
 
+For optional analytics, construct clients only after the host has obtained consent.
+On withdrawal call `client.destroy({ discard: true })` to cancel pending transport
+and remove its retained events and issue aggregates. Custom transports must honour
+the provided `request.signal`. A late transport completion cannot recreate the
+discarded queue; requests already received by a server cannot be recalled.
+The semantic journey client's existing `destroy()` already aborts and discards.
+
 [![npm version](https://img.shields.io/npm/v/@plasius/analytics.svg)](https://www.npmjs.com/package/@plasius/analytics)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/Plasius-LTD/analytics/ci.yml?branch=main&label=build&style=flat)](https://github.com/Plasius-LTD/analytics/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Plasius-LTD/analytics)](https://codecov.io/gh/Plasius-LTD/analytics)

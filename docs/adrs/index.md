@@ -6,4 +6,5 @@
 - [ADR-0004: Hosted OIDC Package Publication](./adr-0004-hosted-oidc-package-publication.md)
 - [ADR-0005: Fixed Useful Metric Projection](./adr-0005-fixed-useful-metric-projection.md)
 - [ADR-0006: Standalone Useful Metric Entry](./adr-0006-standalone-useful-metric-entry.md)
+- [ADR 0007: Consent withdrawal disposal](adr-0007-consent-withdrawal-disposal.md)
 - [ADR-0008: Catalogue-Owned Aggregate Projections](./adr-0008-catalogue-aggregate-projections.md)
