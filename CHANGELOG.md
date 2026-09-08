@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 - **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.4.0] - 2026-09-08
+
+- **Added**
   - Opt-in catalogue-owned `2.1-aggregate` views and a shared fail-closed ingress
     validator with exact application producer bindings and strict 2.0 support.
   - Bounded projected aggregation by original observation hour, immutable retry
@@ -385,3 +399,4 @@ All notable changes to this project are documented in this file.
 [1.3.1]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.1
 [1.3.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.2
 [1.3.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.3.3
+[1.4.0]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.0
