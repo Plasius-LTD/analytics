@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.4.5] - 2026-10-25
+
 - Refresh npm dependency lockfile to current supported stable versions (weekly maintenance, 2026-10-25). Refresh published Plasius package baselines after upstream releases.
 
 - **Added**
@@ -470,3 +484,4 @@ All notable changes to this project are documented in this file.
 [1.4.2]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.2
 [1.4.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.3
 [1.4.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.4
+[1.4.5]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.5
