@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [1.4.6] - 2026-11-22
+
 - Refresh supported npm dependencies and consume the verified schema release; align the esbuild override with the declared direct dependency.
 
 - **Added**
@@ -487,3 +501,4 @@ All notable changes to this project are documented in this file.
 [1.4.3]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.3
 [1.4.4]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.4
 [1.4.5]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.5
+[1.4.6]: https://github.com/Plasius-LTD/analytics/releases/tag/v1.4.6
