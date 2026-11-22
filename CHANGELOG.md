@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+- Refresh supported npm dependencies and consume the verified schema release; align the esbuild override with the declared direct dependency.
+
 - **Added**
   - (placeholder)
 
